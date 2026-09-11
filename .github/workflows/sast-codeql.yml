@@ -1,0 +1,62 @@
+name: SAST - CodeQL (Fundit-backend)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sast-codeql.yml'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sast-codeql.yml'
+  schedule:
+    # 매주 월요일 03:00 UTC(한국시간 12:00)에 전체 재스캔 — 이 레포는 대상
+    # 레포지토리의 PR/push 이벤트를 직접 받을 수 없어, 스케줄이 실질적인
+    # 주기적 재스캔 트리거가 된다.
+    - cron: '0 3 * * 1'
+  workflow_dispatch: {}
+
+jobs:
+  analyze:
+    name: Analyze Fundit-backend (java-kotlin)
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write # CodeQL 결과를 이 레포의 Security 탭에 업로드하기 위해 필요
+      contents: read
+
+    steps:
+      - name: Checkout Fundit-backend (develop)
+        uses: actions/checkout@v7
+        with:
+          repository: KT-Cloud-Tech-Up-team6/Fundit-backend
+          ref: develop
+          persist-credentials: false
+          # 이 레포(Fundit-Security) 자신이 아니라 대상 레포지토리를 체크아웃한다.
+          # public 레포라 별도 토큰 없이 읽기 전용으로 가져올 수 있다.
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v6
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: java-kotlin
+          build-mode: autobuild
+          queries: security-extended
+          # security-extended: 기본 쿼리보다 넓은 범위의 보안 쿼리를 포함 —
+          # 오탐이 약간 늘 수 있지만 SAST 도입 목적상 재현율을 우선한다.
+          # build-mode: none(빌드 없이 분석)은 의도적으로 배제 — 대상 레포지토리의
+          # 전 서브프로젝트에 Lombok(compileOnly+annotationProcessor)이 적용돼 있어,
+          # 빌드를 거치지 않으면 getter/setter/builder 등 생성 코드가 분석에서 빠진다.
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:java-kotlin"
