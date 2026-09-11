@@ -19,6 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      security-events: write
 
     steps:
       - name: Checkout this repository
@@ -57,8 +58,7 @@ jobs:
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:java-kotlin"
-          upload: false # 외부 레포 분석 결과라 이 레포의 Security 탭 업로드 대상이 아님
-          output: sarif-results
+          output: sarif-results # upload와 별개로 로컬 사본도 아티팩트용으로 남긴다
 
       - name: Upload SARIF as artifact
         uses: actions/upload-artifact@v4
