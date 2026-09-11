@@ -25,14 +25,25 @@ jobs:
       contents: read
 
     steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+        # Fundit-Security 자신을 $GITHUB_WORKSPACE 루트에 체크아웃한다. CodeQL이
+        # 결과를 업로드할 때 이 워크플로를 트리거한 커밋(github.sha)을 기준으로
+        # 찾기 때문에, 루트의 git 이력이 그 커밋과 일치해야 한다 — 대상 레포지토리를
+        # 루트에 바로 체크아웃하면 이 이력이 덮어써져 "commit not found" 오류가 난다.
+
       - name: Checkout Fundit-backend (develop)
         uses: actions/checkout@v7
         with:
           repository: KT-Cloud-Tech-Up-team6/Fundit-backend
           ref: develop
+          path: target-repo
           persist-credentials: false
-          # 이 레포(Fundit-Security) 자신이 아니라 대상 레포지토리를 체크아웃한다.
-          # public 레포라 별도 토큰 없이 읽기 전용으로 가져올 수 있다.
+          # 대상 레포지토리는 루트가 아니라 서브폴더(target-repo/)에 체크아웃해서
+          # 루트의 git 이력과 섞이지 않게 한다. public 레포라 별도 토큰 없이
+          # 읽기 전용으로 가져올 수 있다.
 
       - name: Set up JDK 25
         uses: actions/setup-java@v6
@@ -40,9 +51,10 @@ jobs:
           java-version: '25'
           distribution: 'temurin'
           cache: 'gradle'
+          cache-dependency-path: target-repo/**/*.gradle*
 
       - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+        run: chmod +x target-repo/gradlew
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
@@ -50,6 +62,9 @@ jobs:
           languages: java-kotlin
           build-mode: autobuild
           queries: security-extended
+          source-root: target-repo
+          # source-root: 실제로 분석할 코드가 있는 위치를 지정 — 루트가 아니라
+          # target-repo/ 아래에 있음을 CodeQL에 알려준다.
           # security-extended: 기본 쿼리보다 넓은 범위의 보안 쿼리를 포함 —
           # 오탐이 약간 늘 수 있지만 SAST 도입 목적상 재현율을 우선한다.
           # build-mode: none(빌드 없이 분석)은 의도적으로 배제 — 대상 레포지토리의
@@ -60,3 +75,4 @@ jobs:
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:java-kotlin"
+          checkout_path: target-repo
