@@ -1,0 +1,28 @@
+# OS / 에디터
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Java/Gradle (로컬 테스트 시 생기는 빌드 산출물 방지)
+.gradle/
+build/
+*.class
+
+# Python (커스텀 스크립트용)
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# 원시 스캔 출력 — 정제된 보고서(sast/reports/*.md 등)만 커밋하고,
+# 원본 SARIF/HTML/JSON은 GitHub Actions 아티팩트로만 보관한다.
+*.sarif
+*.sarif.json
+dependency-check-report.html
+dependency-check-report.json
+
+# 자격증명/비밀 (실수 커밋 방지)
+*.pem
+*.key
+.env
