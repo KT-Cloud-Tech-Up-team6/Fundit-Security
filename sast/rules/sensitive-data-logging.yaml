@@ -1,0 +1,20 @@
+rules:
+  - id: sensitive-data-in-log
+    languages: [java]
+    severity: WARNING
+    message: >
+      로그 메시지에 비밀번호/토큰/카드번호 등 민감 정보로 보이는 변수가
+      그대로 포함되어 있습니다. 로그에는 민감 정보를 남기지 않거나
+      마스킹해야 합니다.
+    metadata:
+      category: security
+      cwe: "CWE-532: Insertion of Sensitive Information into Log File"
+    patterns:
+      - pattern-either:
+          - pattern: log.info(..., $VAR, ...)
+          - pattern: log.warn(..., $VAR, ...)
+          - pattern: log.error(..., $VAR, ...)
+          - pattern: log.debug(..., $VAR, ...)
+      - metavariable-regex:
+          metavariable: $VAR
+          regex: (?i)(password|secret|token|apikey|api_key|privatekey|cardnumber|card_number|ssn|pin)

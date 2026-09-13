@@ -5,7 +5,7 @@ SAST + 의존성 점검(SCA) 자동화 파이프라인입니다. 현재는 Fundi
 ## 도구
 
 - **CodeQL** — `security-extended` 쿼리, `build-mode: autobuild`
-- **Semgrep** — OWASP/Java/Spring 공개 룰셋에 커스텀 룰을 더해서 사용
+- **Semgrep** — OWASP Top 10 / Java / 시큐리티 감사 / 시크릿 / JWT 공개 룰셋에 커스텀 룰을 더해서 사용 (`p/spring`은 레지스트리에 존재하지 않아 미사용)
 - **OWASP Dependency-Check** — 의존성 취약점 점검(SCA), CVSS 등급까지 포함
 
 ## 폴더

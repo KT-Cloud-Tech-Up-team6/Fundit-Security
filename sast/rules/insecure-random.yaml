@@ -1,0 +1,19 @@
+rules:
+  - id: insecure-random-for-security
+    languages: [java]
+    severity: WARNING
+    message: >
+      java.util.Random 또는 Math.random()은 예측 가능한 난수를 생성합니다.
+      세션 ID, 인증 토큰, 재설정 토큰, 암호화 키/IV 등 보안 관련 값에는
+      java.security.SecureRandom을 사용해야 합니다. 보안과 무관한 용도라면
+      오탐으로 제외해도 됩니다.
+    metadata:
+      category: security
+      cwe: "CWE-338: Use of Cryptographically Weak PRNG"
+      references:
+        - https://cwe.mitre.org/data/definitions/338.html
+    patterns:
+      - pattern-either:
+          - pattern: new java.util.Random(...)
+          - pattern: new Random(...)
+          - pattern: Math.random()
