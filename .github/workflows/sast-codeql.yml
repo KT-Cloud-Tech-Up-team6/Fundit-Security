@@ -23,12 +23,12 @@ jobs:
 
     steps:
       - name: Checkout this repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
 
       - name: Checkout Fundit-backend (develop)
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: KT-Cloud-Tech-Up-team6/Fundit-backend
           ref: develop
@@ -36,7 +36,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up JDK 25
-        uses: actions/setup-java@v6
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
         with:
           java-version: '25'
           distribution: 'temurin'
@@ -47,7 +47,7 @@ jobs:
         run: chmod +x target-repo/gradlew
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4
         with:
           languages: java-kotlin
           build-mode: autobuild # Lombok 어노테이션 프로세싱 때문에 none 대신 사용
@@ -55,13 +55,13 @@ jobs:
           source-root: target-repo
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v4
+        uses: github/codeql-action/analyze@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4
         with:
           category: "/language:java-kotlin"
           output: sarif-results # upload와 별개로 로컬 사본도 아티팩트용으로 남긴다
 
       - name: Upload SARIF as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: codeql-sast-results
           path: sarif-results
