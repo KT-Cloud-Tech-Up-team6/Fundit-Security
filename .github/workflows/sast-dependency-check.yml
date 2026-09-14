@@ -89,6 +89,7 @@ jobs:
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: |
+          mkdir -p dc-data reports
           docker run --rm \
             -u "$(id -u):$(id -g)" \
             --volume "$PWD/dependency-jars:/src" \
@@ -101,7 +102,9 @@ jobs:
             --out /report \
             --nvdApiKey "$NVD_API_KEY" \
             --failOnCVSS 11 \
-            --log /report/dependency-check-debug.log
+            --log /report/dependency-check-debug.log \
+            --nvdMaxRetryCount 15 \
+            --readtimeout 90000
 
       - name: Save vulnerability database cache
         if: success()
