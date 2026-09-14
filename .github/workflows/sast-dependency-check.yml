@@ -86,15 +86,20 @@ jobs:
             dependency-check-db-
 
       - name: Run OWASP Dependency-Check
-        uses: dependency-check/Dependency-Check_Action@75ba02d6183445fe0761d26e836bde58b1560600 # v1.1.0
-        with:
-          project: 'Fundit-backend'
-          path: 'dependency-jars'
-          format: 'ALL'
-          args: >
-            --out dependency-check-report
-            --data dc-data
-            --nvdApiKey ${{ secrets.NVD_API_KEY }}
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: |
+          docker run --rm \
+            -u "$(id -u):$(id -g)" \
+            --volume "$PWD/dependency-jars:/src" \
+            --volume "$PWD/dc-data:/usr/share/dependency-check/data" \
+            --volume "$PWD/reports:/report" \
+            owasp/dependency-check:latest \
+            --scan /src \
+            --format ALL \
+            --project "Fundit-backend" \
+            --out /report \
+            --nvdApiKey "$NVD_API_KEY" \
             --failOnCVSS 11
 
       - name: Save vulnerability database cache
@@ -109,5 +114,5 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: dependency-check-report
-          path: dependency-check-report
+          path: reports
           retention-days: 30
