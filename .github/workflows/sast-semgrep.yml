@@ -12,7 +12,7 @@ on:
       - '.github/workflows/sast-semgrep.yml'
       - 'sast/rules/**'
   schedule:
-    - cron: '0 4 * * 1' # 매주 월요일 04:00 UTC(한국시간 13:00) 전체 재스캔
+    - cron: '0 4 * * *' # 매일 04:00 UTC(한국시간 13:00) 전체 재스캔
   workflow_dispatch: {}
 
 jobs:
