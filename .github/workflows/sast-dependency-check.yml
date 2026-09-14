@@ -91,8 +91,8 @@ jobs:
           project: 'Fundit-backend'
           path: 'dependency-jars'
           format: 'ALL'
-          out: 'dependency-check-report'
           args: >
+            --out dependency-check-report
             --data dc-data
             --nvdApiKey ${{ secrets.NVD_API_KEY }}
             --failOnCVSS 11
