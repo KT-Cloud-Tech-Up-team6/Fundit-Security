@@ -100,7 +100,8 @@ jobs:
             --project "Fundit-backend" \
             --out /report \
             --nvdApiKey "$NVD_API_KEY" \
-            --failOnCVSS 11
+            --failOnCVSS 11 \
+            --log /report/dependency-check-debug.log
 
       - name: Save vulnerability database cache
         if: success()
