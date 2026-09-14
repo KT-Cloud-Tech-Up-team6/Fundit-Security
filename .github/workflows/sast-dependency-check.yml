@@ -103,7 +103,7 @@ jobs:
             --failOnCVSS 11
 
       - name: Save vulnerability database cache
-        if: always()
+        if: success()
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: dc-data
