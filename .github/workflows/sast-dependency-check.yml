@@ -1,0 +1,122 @@
+name: SAST - Dependency-Check (Fundit-backend)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sast-dependency-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sast-dependency-check.yml'
+  schedule:
+    - cron: '0 4 * * 1' # 매주 월요일 04:00 UTC(한국시간 13:00) 전체 재스캔
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    name: Build Fundit-backend (no secrets used in this job)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Checkout Fundit-backend (develop)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: KT-Cloud-Tech-Up-team6/Fundit-backend
+          ref: develop
+          path: target-repo
+          persist-credentials: false
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          # Gradle 캐시 미사용 - 캐시된 옛날 라이브러리가 스캔 대상에 잘못 남을 수 있음
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x target-repo/gradlew
+
+      - name: Build Fundit-backend to resolve real dependency versions
+        working-directory: target-repo
+        run: ./gradlew build -x test
+
+      - name: Get Gradle cache location
+        id: gradle-home
+        run: echo "path=$HOME/.gradle/caches/modules-2/files-2.1" >> "$GITHUB_OUTPUT"
+
+      - name: Upload resolved dependency jars
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: fundit-backend-dependencies
+          path: ${{ steps.gradle-home.outputs.path }}
+          retention-days: 1
+
+  scan:
+    name: Scan dependencies (OWASP Dependency-Check)
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Download resolved dependency jars
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: fundit-backend-dependencies
+          path: dependency-jars
+
+      - name: Get current date
+        id: get-date
+        run: echo "date=$(date +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
+
+      - name: Restore vulnerability database cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: dc-data
+          key: dependency-check-db-${{ steps.get-date.outputs.date }}
+          restore-keys: |
+            dependency-check-db-
+
+      - name: Run OWASP Dependency-Check
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: |
+          mkdir -p dc-data reports
+          docker run --rm \
+            -u "$(id -u):$(id -g)" \
+            --volume "$PWD/dependency-jars:/src" \
+            --volume "$PWD/dc-data:/usr/share/dependency-check/data" \
+            --volume "$PWD/reports:/report" \
+            owasp/dependency-check:latest \
+            --scan /src \
+            --format ALL \
+            --project "Fundit-backend" \
+            --out /report \
+            --nvdApiKey "$NVD_API_KEY" \
+            --failOnCVSS 11 \
+            --log /report/dependency-check-debug.log \
+            --nvdMaxRetryCount 15 \
+            --readtimeout 90000
+
+      - name: Save vulnerability database cache
+        if: success()
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: dc-data
+          key: dependency-check-db-${{ steps.get-date.outputs.date }}
+
+      - name: Upload Dependency-Check report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: dependency-check-report
+          path: reports
+          retention-days: 30
