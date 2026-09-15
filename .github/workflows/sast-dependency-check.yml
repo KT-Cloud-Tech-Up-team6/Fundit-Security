@@ -86,7 +86,7 @@ jobs:
             dependency-check-db-
 
       - name: Run OWASP Dependency-Check
-        timeout-minutes: 300
+        timeout-minutes: 330
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: |
