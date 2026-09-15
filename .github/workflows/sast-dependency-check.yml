@@ -86,6 +86,7 @@ jobs:
             dependency-check-db-
 
       - name: Run OWASP Dependency-Check
+        timeout-minutes: 330
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: |
@@ -103,7 +104,8 @@ jobs:
             --nvdApiKey "$NVD_API_KEY" \
             --failOnCVSS 11 \
             --log /report/dependency-check-debug.log \
-            --nvdMaxRetryCount 15 \
+            --nvdApiDelay 6000 \
+            --nvdMaxRetryCount 20 \
             --readtimeout 90000
 
       - name: Save vulnerability database cache
