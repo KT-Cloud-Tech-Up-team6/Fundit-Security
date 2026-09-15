@@ -15,12 +15,13 @@ __pycache__/
 .venv/
 venv/
 
-# 원시 스캔 출력 — 정제된 보고서(sast/reports/*.md 등)만 커밋하고,
-# 원본 SARIF/HTML/JSON은 GitHub Actions 아티팩트로만 보관한다.
+# 원시 스캔 출력 — sast/reports/ 안은 기본적으로 전부 커밋 금지(화이트리스트 방식).
+# 파일명·폴더명을 나열해서 막는 대신, 정제된 보고서만 명시적으로 허용한다 —
+# 새로운 리포트 형식이 추가되거나 폴더명이 바뀌어도 기본값이 "차단"이라 안전하다.
 *.sarif
 *.sarif.json
-dependency-check-report.html
-dependency-check-report.json
+sast/reports/*
+!sast/reports/sast-report.md
 
 # 자격증명/비밀 (실수 커밋 방지)
 *.pem
