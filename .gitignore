@@ -22,6 +22,7 @@ venv/
 *.sarif.json
 sast/reports/*
 !sast/reports/sast-report.md
+!sast/reports/auth-crypto-policy-verification.md
 
 # 자격증명/비밀 (실수 커밋 방지)
 *.pem

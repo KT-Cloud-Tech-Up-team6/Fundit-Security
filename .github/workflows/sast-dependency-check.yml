@@ -90,6 +90,9 @@ jobs:
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: |
+          # --log 옵션: NVD 동기화 문제를 진단하려고 추가한 디버그 로그. 확인 결과
+          # API 키는 자체 마스킹되고 아티팩트 다운로드엔 레포 read 권한이 필요해 지금은
+          # 안전하지만, 이 워크플로를 다음에 손볼 때 더 이상 필요 없다면 제거할 것.
           mkdir -p dc-data reports
           docker run --rm \
             -u "$(id -u):$(id -g)" \
