@@ -103,7 +103,6 @@ jobs:
             --out /report \
             --nvdApiKey "$NVD_API_KEY" \
             --failOnCVSS 11 \
-            --log /report/dependency-check-debug.log \
             --nvdApiDelay 6000 \
             --nvdMaxRetryCount 20 \
             --readtimeout 90000
